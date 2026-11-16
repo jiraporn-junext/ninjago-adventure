@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#0f172a" />
+    </linearGradient>
+    <linearGradient id="suit" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f46036" />
+      <stop offset="55%" stop-color="#d7263d" />
+      <stop offset="100%" stop-color="#a51b30" />
+    </linearGradient>
+    <clipPath id="body">
+      <path d="M170 262h172l26 150H144z" />
+    </clipPath>
+  </defs>
+
+  <rect width="512" height="512" rx="112" fill="url(#bg)" />
+
+  <!-- Hood -->
+  <path d="M256 84c-84 0-132 56-132 132v56h264v-56c0-76-48-132-132-132z" fill="url(#suit)" />
+  <!-- Face -->
+  <ellipse cx="256" cy="212" rx="62" ry="58" fill="#f2c6a0" />
+  <!-- Mask -->
+  <path d="M194 224h124v54H194z" fill="#a51b30" />
+  <!-- Eyes -->
+  <ellipse cx="233" cy="202" rx="12" ry="14" fill="#1f2937" />
+  <ellipse cx="279" cy="202" rx="12" ry="14" fill="#1f2937" />
+  <circle cx="237" cy="197" r="4" fill="#fff" opacity="0.9" />
+  <circle cx="283" cy="197" r="4" fill="#fff" opacity="0.9" />
+  <!-- Emblem -->
+  <path d="M256 116l26 38-26 38-26-38z" fill="#f7c948" />
+  <!-- Body -->
+  <path d="M170 262h172l26 150H144z" fill="url(#suit)" />
+  <!-- Sash -->
+  <path d="M176 268l176 132-34 40-152-116z" fill="#f7c948" opacity="0.95" clip-path="url(#body)" />
+  <!-- Belt -->
+  <rect x="144" y="368" width="224" height="44" rx="8" fill="#a51b30" />
+  <rect x="238" y="368" width="44" height="44" rx="6" fill="#f7c948" />
+</svg>

@@ -1,0 +1,41 @@
+{
+  "name": "ninjago-adventure",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Platsbasat ninjaspel i Älta, Nacka. Gör uppdrag för att hitta ninjagubbar.",
+  "engines": {
+    "node": ">=24.12.0"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "typecheck": "vue-tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "playwright test",
+    "icons": "node scripts/make-icons.mjs"
+  },
+  "dependencies": {
+    "leaflet": "1.9.4",
+    "vue": "3.5.45",
+    "vue-router": "4.6.5"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.65.1",
+    "@types/leaflet": "1.9.22",
+    "@types/node": "26.6.6",
+    "@vitejs/plugin-vue": "6.0.11",
+    "fake-indexeddb": "6.2.8",
+    "jsdom": "31.0.1",
+    "sass": "1.108.2",
+    "typescript": "5.9.3",
+    "vite": "7.3.8",
+    "vite-plugin-pwa": "2.0.0",
+    "vitest": "4.1.12",
+    "vue-tsc": "3.3.14",
+    "workbox-build": "7.4.1",
+    "workbox-window": "7.4.1"
+  }
+}

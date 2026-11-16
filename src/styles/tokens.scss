@@ -1,0 +1,31 @@
+:root {
+  --bg: #0f172a;
+  --bg-deep: #020617;
+  --surface: #1e293b;
+  --surface-raised: #263449;
+  --border: #334155;
+
+  --text: #f1f5f9;
+  --text-muted: #94a3b8;
+  --text-dim: #64748b;
+
+  --accent: #f46036;
+  --accent-soft: rgba(244, 96, 54, 0.16);
+  --gold: #f7c948;
+  --success: #4ade80;
+  --danger: #f87171;
+
+  --radius-sm: 10px;
+  --radius: 16px;
+  --radius-lg: 24px;
+
+  --tap: 44px;
+  --gap: 12px;
+
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+
+  --font: "Segoe UI", Roboto, -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
+}
