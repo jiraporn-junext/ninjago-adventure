@@ -5,6 +5,8 @@ import { geoStore } from "@/stores/geoStore";
 import { downloadSave, readSaveFile } from "@/lib/saver";
 import { isWakeLockSupported } from "@/lib/wakeLock";
 
+const version = __APP_VERSION__;
+
 const fileInput = ref<HTMLInputElement | null>(null);
 const message = ref<string | null>(null);
 
@@ -102,6 +104,20 @@ function resetProgress(): void {
         @change="importSave"
       />
       <p v-if="message" class="settings__message">{{ message }}</p>
+    </section>
+
+    <section class="card settings__section">
+      <h2 class="settings__heading">Om appen</h2>
+      <dl class="settings__facts">
+        <div>
+          <dt>Version</dt>
+          <dd>{{ version }}</dd>
+        </div>
+      </dl>
+      <p class="settings__note muted">
+        När det finns en ny version hämtas den automatiskt nästa gång du startar appen. Vill du
+        se den direkt? Avsluta appen helt och starta om den.
+      </p>
     </section>
 
     <section class="card settings__section">
