@@ -191,3 +191,13 @@ promenad har hög riktning och räknas. Enhetstesterna i
   stannar. Spelet använder Wake Lock där webbläsaren stöder det.
 - **Karaktärerna är egna.** Figurerna är original i LEGO-inspirerad stil. Inga
   Ninjago-logotyper eller officiella karaktärer används.
+
+## Licens
+
+Spelet är proprietät och skyddat av © Jesper Johansson. Kopiering, ändring
+och vidare distribution är **inte** tillåtna utan skriftligt tillstånd. Se
+[LICENSE](LICENSE) för hela licenstexten.
+
+Kartdata kommer från OpenStreetMap och är licenserad under ODbL. NINJAGO och
+LEGO är varumärken som tillhör The LEGO Group, som varken sponsrar eller
+godkänner spelet.
