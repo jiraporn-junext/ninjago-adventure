@@ -1,17 +1,22 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import PieceCard from "@/components/collection/PieceCard.vue";
+import { ENEMIES } from "@/data/enemies";
 import { PIECES } from "@/data/pieces";
 import { gameStore } from "@/stores/gameStore";
 
 const owned = computed(() => gameStore.ownedPieces.value.length);
+const defeated = computed(() => gameStore.defeatedEnemies.value.length);
 </script>
 
 <template>
   <div class="collection scroll-area">
     <header class="collection__header">
       <h1 class="collection__title">Samling</h1>
-      <p class="collection__count muted">{{ owned }} av {{ PIECES.length }} ninjagubbar</p>
+      <p class="collection__count muted">
+        {{ owned }} av {{ PIECES.length }} ninjagubbar · {{ defeated }} av {{ ENEMIES.length }}
+        fiender besegrade
+      </p>
     </header>
 
     <div class="collection__grid">

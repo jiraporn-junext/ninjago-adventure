@@ -42,6 +42,33 @@ export interface Piece {
 
 export type PieceStatus = "hidden" | "available" | "active" | "owned";
 
+/** Typen av fiende - bestämmer silhuetten, elementet bestämmer färgen. */
+export type EnemyKind = "varg" | "golem" | "drake";
+
+export interface Enemy {
+  id: string;
+  name: string;
+  kind: EnemyKind;
+  /** Fiendens element - bestämmer hur den ser ut. */
+  element: Element;
+  /** Elementet fienden är svag mot. En ninja med det elementet slår hårdare. */
+  weakness: Element;
+  lat: number;
+  lng: number;
+  locationName: string;
+  blurb: string;
+  /** Minsta antal samlade ninjagubbar som krävs för att ens utmana fienden. */
+  minNinjas: number;
+  /** Antal träffar som krävs för att besegra fienden. */
+  hp: number;
+  questions: QuizQuestion[];
+}
+
+export interface EnemyProgress {
+  status: "alive" | "defeated";
+  defeatedAt?: number;
+}
+
 export interface StepProgress {
   status: "pending" | "done";
   /** Gått i det här steget, i meter. */
@@ -58,6 +85,8 @@ export interface PieceProgress {
   status: PieceStatus;
   stepIndex: number;
   steps: Record<string, StepProgress>;
+  /** Ninjan har styrka 1 från början och blir starkare för varje fiende den besegrar. */
+  strength?: number;
   startedAt?: number;
   completedAt?: number;
 }
@@ -65,6 +94,7 @@ export interface PieceProgress {
 export interface SaveState {
   version: number;
   pieces: Record<string, PieceProgress>;
+  enemies: Record<string, EnemyProgress>;
   totalWalkMeters: number;
   updatedAt: number;
 }

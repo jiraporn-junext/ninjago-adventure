@@ -13,6 +13,29 @@ Varje gubbe har sitt eget uppdrag med ett eller flera steg:
 Ingen backend, ingen databas, inga konton. Allt ligger i webbläsarens lagring på
 din telefon, och spelet är en installerbar PWA som fungerar offline.
 
+## Fiender
+
+Utanför gubbarna finns **fiender** utspridda på samma riktiga platser. En fiend
+syns på kartan när du är inom 250 meter, och du kan bara utmana den när du
+står vid den.
+
+För att besegra en fiend behöver du de ninjagubbar du redan har samlat:
+
+- **Rätt element** - varje fiend är svag mot ett element. Fighta med en ninja
+  med det elementet, annars går det inte att utmana den.
+- **Tillräckligt många ninjor** - de starkare fienderna kräver att du har
+  samlat flera gubbar.
+
+Striden går till så här:
+
+1. Fienden ställer frågor. Ett **rätt svar** ger fienden skada.
+2. Ett **fel svar** ger fienden ett svep - din ninja har tre hjärtskärvor att
+   spendera. Frågan står kvar, så du kan försöka igen.
+3. När fiendens hälsa är noll är den besegrad. Ninjan du fightade med blir
+   **starkare** (styrka 1 från början), och en starkare ninja träffar hårdare.
+
+Förlorar du får du försöka igen - fienden blir inte svagare av att du gissar.
+
 ## Kom igång
 
 ```bash
@@ -69,13 +92,16 @@ Ger en HTTPS-adress direkt, men tunneln måste vara igång under promenaden.
 ```
 src/
 ├── components/
-│   ├── figures/     NinjaFigure - den egna ninjafiguren i SVG
+│   ├── figures/     NinjaFigure och EnemyFigure - egna figurerna i SVG
 │   ├── map/         GameMap - Leaflet, följande kamera, markörer
 │   ├── mission/     MissionPanel, WalkStep, QuizStep, PhotoStep
+│   ├── battle/      EnemyBattle - striden mot en fiend
 │   └── collection/  PieceCard
-├── data/            pieces.ts (seed), questions.ts (quizbank), themes.ts (färger)
-├── domain/          types.ts
+├── data/            pieces.ts (gubbar), enemies.ts (fiender), questions.ts, themes.ts
+├── types.ts         Typerna för gubbar, fiender, steg och sparfiler
 ├── lib/
+│   ├── battle.ts    Stridsreglerna - ren logik utan Vue
+│   ├── enemyMarkup.ts Fiendefigurerna som markup-sträng
 │   ├── geo/         geoMath, positionTracker, useGeolocation
 │   ├── photos/      capture - nedskalning av kamerabilder
 │   └── storage/     localState, photosDb
@@ -107,6 +133,33 @@ ett element, koordinater, en platsnamn, en beskrivning och en lista med steg:
 Koordinaterna för de befintliga gubbarna kommer ur OpenStreetMap (Overpass) och
 ligger centrerade på platsen. En gubbe som hamnar fel i kartan förstör
 spelloopen, så kontrollera koordinaten på plats innan du lägger till den.
+
+### Lägga till fler fiender
+
+Fienderna ligger i `src/data/enemies.ts`. En fiend behöver ett id, ett namn, en
+silhuett (`varg`, `golem` eller `drake`), ett element, det element den är svag
+mot, koordinater, ett platsnamn, en beskrivning, hälsa, antal ninjagubbar som
+krävs och en frågelista:
+
+```ts
+{
+  id: "ny-fiend",
+  name: "Ny fiend",
+  kind: "varg",
+  element: "vind",         // hur fienden ser ut
+  weakness: "jord",        // elementet den är svag mot
+  lat: 59.2595,
+  lng: 18.174,
+  locationName: "Ny plats",
+  blurb: "Beskrivning av fienden.",
+  hp: 2,                   // antal rätta svar som krävs
+  minNinjas: 1,            // minst så många gubbar i samlingen
+  questions: [QUESTIONS["typ-park"]],
+}
+```
+
+Frågelistan måste rymma minst `hp` frågor - en ninja med styrka 1 behöver `hp`
+rätta svar för att besegra fienden.
 
 ## Så fungerar GPS-mätningen
 

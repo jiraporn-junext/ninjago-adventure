@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref } from "vue";
 import { RouterLink, RouterView } from "vue-router";
+import { ENEMIES } from "@/data/enemies";
+import { PIECES } from "@/data/pieces";
 import { gameStore } from "@/stores/gameStore";
 
 interface InstallPromptEvent extends Event {
@@ -52,7 +54,8 @@ const tabs = [
         <div>
           <p class="app-shell__title">Ninjago Adventure</p>
           <p class="app-shell__subtitle muted">
-            {{ gameStore.ownedPieces.value.length }}/12 samlat ·
+            {{ gameStore.ownedPieces.value.length }}/{{ PIECES.length }} samlat ·
+            {{ gameStore.defeatedEnemies.value.length }}/{{ ENEMIES.length }} fiender ·
             {{ Math.round(gameStore.state.totalWalkMeters) }} m gått
           </p>
         </div>

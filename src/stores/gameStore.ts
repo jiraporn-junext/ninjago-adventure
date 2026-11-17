@@ -1,7 +1,8 @@
 import { computed, reactive, readonly } from "vue";
+import { ENEMIES } from "@/data/enemies";
 import { PIECES, PIECES_BY_ID } from "@/data/pieces";
 import { createInitialState, loadState, saveState } from "@/lib/storage/localState";
-import type { Piece, PieceProgress, SaveState, StepProgress } from "@/types";
+import type { Enemy, Element, Piece, PieceProgress, SaveState, StepProgress } from "@/types";
 import { haversineMeters, type LatLng } from "@/lib/geo/geoMath";
 
 /** Så här nära måste du vara för att ett uppdrag ska gå att starta. */
@@ -104,9 +105,14 @@ export const gameStore = {
     PIECES.find((piece) => state.pieces[piece.id]?.status === "active"),
   ),
 
+  defeatedEnemies: computed(() =>
+    ENEMIES.filter((enemy) => state.enemies[enemy.id]?.status === "defeated"),
+  ),
+
   initialize(): void {
     const loaded = loadState();
     state.pieces = loaded.pieces;
+    state.enemies = loaded.enemies;
     state.totalWalkMeters = loaded.totalWalkMeters;
     state.updatedAt = loaded.updatedAt;
   },
@@ -121,9 +127,25 @@ export const gameStore = {
     return state.pieces[pieceId]?.status === "owned";
   },
 
-  distanceTo(piece: Piece, position: LatLng | null): number | null {
+  /** Ninjan börjar med styrka 1 och blir starkare för varje fiende hon besegrar. */
+  ninjaStrength(pieceId: string): number {
+    return state.pieces[pieceId]?.strength ?? 1;
+  },
+
+  /** De samlade ninjorna som har ett visst element. */
+  ninjasWithElement(element: Element): Piece[] {
+    return PIECES.filter(
+      (piece) => piece.element === element && state.pieces[piece.id]?.status === "owned",
+    );
+  },
+
+  isEnemyDefeated(enemyId: string): boolean {
+    return state.enemies[enemyId]?.status === "defeated";
+  },
+
+  distanceTo(place: Piece | Enemy, position: LatLng | null): number | null {
     if (!position) return null;
-    return haversineMeters(position, { lat: piece.lat, lng: piece.lng });
+    return haversineMeters(position, { lat: place.lat, lng: place.lng });
   },
 
   /** Markera platser som du står på, så att de syns i uppgiftslistan. */
@@ -219,8 +241,24 @@ export const gameStore = {
     persist();
   },
 
+  /**
+   * Fienden är besegrad. Ninjan som fightade blir starkare, så nästa fiend
+   * går fortare att besegra.
+   */
+  defeatEnemy(enemyId: string, pieceId: string): void {
+    if (state.enemies[enemyId]?.status === "defeated") return;
+
+    state.enemies[enemyId] = { status: "defeated", defeatedAt: Date.now() };
+
+    const progress = state.pieces[pieceId];
+    if (progress) progress.strength = (progress.strength ?? 1) + 1;
+
+    persist();
+  },
+
   reset(): void {
     state.pieces = {};
+    state.enemies = {};
     state.totalWalkMeters = 0;
     storageFull.warning = false;
     persist();
@@ -236,6 +274,7 @@ export const gameStore = {
       if (!parsed || typeof parsed !== "object" || !parsed.pieces) return false;
 
       state.pieces = parsed.pieces as SaveState["pieces"];
+      state.enemies = (parsed.enemies as SaveState["enemies"]) ?? {};
       state.totalWalkMeters = parsed.totalWalkMeters ?? 0;
       state.updatedAt = Date.now();
       persist();

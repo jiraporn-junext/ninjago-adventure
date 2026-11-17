@@ -2,18 +2,21 @@
 import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import GameMap from "@/components/map/GameMap.vue";
 import MissionPanel from "@/components/mission/MissionPanel.vue";
+import EnemyBattle from "@/components/battle/EnemyBattle.vue";
 import AppSheet from "@/components/ui/AppSheet.vue";
 import NinjaFigure from "@/components/figures/NinjaFigure.vue";
+import { ENEMIES_BY_ID } from "@/data/enemies";
 import { PIECES_BY_ID } from "@/data/pieces";
 import { gameStore, START_RADIUS_M } from "@/stores/gameStore";
 import { geoStore } from "@/stores/geoStore";
 import { useGeolocation } from "@/lib/geo/useGeolocation";
 import { releaseWakeLock, requestWakeLock } from "@/lib/wakeLock";
-import type { Piece } from "@/types";
+import type { Enemy, Piece } from "@/types";
 
 const { start } = useGeolocation();
 
 const sheetPiece = ref<Piece | null>(null);
+const sheetEnemy = ref<Enemy | null>(null);
 const wakeLockDenied = ref(false);
 
 const sheetOpen = computed(() => sheetPiece.value !== null);
@@ -51,6 +54,15 @@ function openPiece(pieceId: string): void {
 
 function closeSheet(): void {
   sheetPiece.value = null;
+}
+
+function openEnemy(enemyId: string): void {
+  const enemy = ENEMIES_BY_ID[enemyId];
+  if (enemy) sheetEnemy.value = enemy;
+}
+
+function closeEnemySheet(): void {
+  sheetEnemy.value = null;
 }
 
 function startMission(): void {
@@ -94,7 +106,7 @@ onBeforeUnmount(() => {
 
 <template>
   <div class="map-view">
-    <GameMap @select-piece="openPiece" />
+    <GameMap @select-piece="openPiece" @select-enemy="openEnemy" />
 
     <div v-if="!geoStore.watching" class="map-view__gps card">
       <div class="map-view__gps-text">
@@ -171,6 +183,14 @@ onBeforeUnmount(() => {
           </button>
         </div>
       </template>
+    </AppSheet>
+
+    <AppSheet
+      :open="sheetEnemy !== null"
+      :title="sheetEnemy?.locationName ?? ''"
+      @close="closeEnemySheet"
+    >
+      <EnemyBattle v-if="sheetEnemy" :enemy="sheetEnemy" @close="closeEnemySheet" />
     </AppSheet>
   </div>
 </template>

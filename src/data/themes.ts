@@ -89,3 +89,8 @@ export const THEMES: Record<Element, ElementTheme> = {
     trousers: "#2a1f38",
   },
 };
+
+/** "is" blir "isninja" - så gubbarna kan beskrivas i text. */
+export function ninjaElementLabel(element: Element): string {
+  return `${THEMES[element].label.toLowerCase()}ninja`;
+}

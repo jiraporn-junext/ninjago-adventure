@@ -2,23 +2,31 @@
 import { onBeforeUnmount, onMounted, ref, shallowRef, watch } from "vue";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import { ENEMIES } from "@/data/enemies";
 import { PIECES } from "@/data/pieces";
 import { THEMES } from "@/data/themes";
 import { gameStore, REVEAL_RADIUS_M, START_RADIUS_M } from "@/stores/gameStore";
 import { geoStore } from "@/stores/geoStore";
+import { enemySvg } from "@/lib/enemyMarkup";
 import { figureSvg } from "@/lib/figureMarkup";
 import { lerpLatLng, type LatLng } from "@/lib/geo/geoMath";
-import type { Piece } from "@/types";
+import type { Enemy, Piece } from "@/types";
 
-const emit = defineEmits<{ (event: "select-piece", pieceId: string): void }>();
+const emit = defineEmits<{
+  (event: "select-piece", pieceId: string): void;
+  (event: "select-enemy", enemyId: string): void;
+}>();
 
 const DEFAULT_CENTER: LatLng = { lat: 59.2595, lng: 18.18 };
 const DEFAULT_ZOOM = 15;
 /** Gubbar du står vid ska synas ovanför avataren - belöningen ska synas. */
 const NEAR_Z_OFFSET = 1200;
 const AVATAR_Z_OFFSET = 1000;
+/** Fiender du står vid ska synas ovanför avataren - annars döljs de. */
+const ENEMY_Z_OFFSET = 1100;
 
 type MarkerState = "hidden" | "hint" | "near" | "owned";
+type EnemyMarkerState = "hidden" | "revealed" | "near" | "defeated";
 
 const mapEl = ref<HTMLElement | null>(null);
 const map = shallowRef<L.Map | null>(null);
@@ -29,6 +37,8 @@ let avatarMarker: L.Marker | null = null;
 let avatarElement: HTMLElement | null = null;
 const pieceMarkers = new Map<string, L.Marker>();
 const pieceStates = new Map<string, MarkerState>();
+const enemyMarkers = new Map<string, L.Marker>();
+const enemyStates = new Map<string, EnemyMarkerState>();
 
 let visualPosition: LatLng | null = null;
 let rafId = 0;
@@ -93,6 +103,69 @@ function syncPieceMarkers(): void {
     } else {
       marker.setIcon(pieceIcon(piece, state));
       marker.setZIndexOffset(state === "near" ? NEAR_Z_OFFSET : 0);
+      if (!map.value.hasLayer(marker)) {
+        marker.addTo(map.value);
+      }
+    }
+  }
+}
+
+function enemyMarkerState(enemy: Enemy): EnemyMarkerState {
+  if (gameStore.isEnemyDefeated(enemy.id)) return "defeated";
+
+  const distance = gameStore.distanceTo(enemy, geoStore.position);
+  if (distance === null) return "hidden";
+  if (distance <= START_RADIUS_M) return "near";
+  if (distance <= REVEAL_RADIUS_M) return "revealed";
+  return "hidden";
+}
+
+function enemyIcon(enemy: Enemy, state: EnemyMarkerState): L.DivIcon {
+  const theme = THEMES[enemy.element];
+  const figure = enemySvg(enemy.kind, enemy.element, { size: 62, name: enemy.name });
+  const defeated = state === "defeated" ? " enemy-marker-figure--defeated" : "";
+  const badge = state === "defeated" ? '<span class="enemy-badge">✓</span>' : "";
+
+  return L.divIcon({
+    className: `enemy-marker enemy-marker--${state}`,
+    html: `<div class="enemy-marker-figure${defeated}" data-enemy="${enemy.id}" style="--accent:${theme.accent}">${figure}${badge}</div>`,
+    iconSize: [62, 100],
+    iconAnchor: [31, 100],
+  });
+}
+
+/** Fiender du står vid - och besegrade fiender - ska synas ovanför avataren. */
+function enemyZOffset(state: EnemyMarkerState): number {
+  return state === "near" || state === "defeated" ? ENEMY_Z_OFFSET : 0;
+}
+
+function syncEnemyMarkers(): void {
+  if (!map.value) return;
+
+  for (const enemy of ENEMIES) {
+    const state = enemyMarkerState(enemy);
+
+    if (enemyStates.get(enemy.id) === state) continue;
+    enemyStates.set(enemy.id, state);
+
+    let marker = enemyMarkers.get(enemy.id);
+    if (!marker) {
+      marker = L.marker([enemy.lat, enemy.lng], {
+        icon: enemyIcon(enemy, state),
+        keyboard: false,
+        zIndexOffset: enemyZOffset(state),
+      });
+      marker.on("click", () => emit("select-enemy", enemy.id));
+      enemyMarkers.set(enemy.id, marker);
+    }
+
+    if (state === "hidden") {
+      if (map.value.hasLayer(marker)) {
+        map.value.removeLayer(marker);
+      }
+    } else {
+      marker.setIcon(enemyIcon(enemy, state));
+      marker.setZIndexOffset(enemyZOffset(state));
       if (!map.value.hasLayer(marker)) {
         marker.addTo(map.value);
       }
@@ -176,6 +249,7 @@ onMounted(() => {
   });
 
   syncPieceMarkers();
+  syncEnemyMarkers();
   rafId = requestAnimationFrame(frame);
 
   // Kartan ligger i en flex-layout som kan ändra storlek efter att Leaflet
@@ -207,12 +281,16 @@ watch(
       map.value.panTo([position.lat, position.lng], { animate: false });
     }
     syncPieceMarkers();
+    syncEnemyMarkers();
   },
 );
 
 watch(
-  () => gameStore.state.pieces,
-  () => syncPieceMarkers(),
+  () => [gameStore.state.pieces, gameStore.state.enemies],
+  () => {
+    syncPieceMarkers();
+    syncEnemyMarkers();
+  },
   { deep: true },
 );
 
@@ -317,6 +395,41 @@ defineExpose({ centerOnPlayer, follow });
 
 :global(.piece-marker--near .piece-figure) {
   filter: drop-shadow(0 0 12px var(--accent));
+}
+
+:global(.enemy-marker) {
+  background: none;
+  border: none;
+}
+
+:global(.enemy-marker-figure) {
+  position: relative;
+  line-height: 0;
+  filter: drop-shadow(0 4px 8px rgb(0 0 0 / 55%));
+}
+
+:global(.enemy-marker--near .enemy-marker-figure) {
+  filter: drop-shadow(0 0 14px var(--accent));
+}
+
+:global(.enemy-marker-figure--defeated .enemy-svg) {
+  opacity: 0.38;
+  filter: grayscale(1);
+}
+
+:global(.enemy-badge) {
+  position: absolute;
+  top: 0;
+  right: 2px;
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--success);
+  color: #052e16;
+  font-size: 0.8rem;
+  font-weight: 700;
 }
 
 :global(.avatar-marker) {

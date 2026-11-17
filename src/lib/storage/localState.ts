@@ -3,17 +3,18 @@ import type { SaveState } from "@/types";
 const STORAGE_KEY = "ninjago-adventure:v1:state";
 const CORRUPT_KEY = "ninjago-adventure:v1:state.corrupt";
 
-export const SAVE_VERSION = 1;
+export const SAVE_VERSION = 2;
 
 /** Migreringar från version N till N+1. Nyckeln är den version man migrerar från. */
 const MIGRATIONS: Record<number, (state: Record<string, unknown>) => Record<string, unknown>> = {
-  1: (state) => ({ ...state, version: 2 }),
+  1: (state) => ({ ...state, version: 2, enemies: {} }),
 };
 
 export function createInitialState(): SaveState {
   return {
     version: SAVE_VERSION,
     pieces: {},
+    enemies: {},
     totalWalkMeters: 0,
     updatedAt: Date.now(),
   };
@@ -33,6 +34,7 @@ function migrate(raw: Record<string, unknown>): SaveState {
   return {
     version: SAVE_VERSION,
     pieces: (state.pieces as SaveState["pieces"]) ?? {},
+    enemies: (state.enemies as SaveState["enemies"]) ?? {},
     totalWalkMeters: (state.totalWalkMeters as number) ?? 0,
     updatedAt: (state.updatedAt as number) ?? Date.now(),
   };

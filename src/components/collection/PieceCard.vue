@@ -46,6 +46,7 @@ onBeforeUnmount(() => {
 
     <p class="piece-card__name">{{ owned ? piece.name : "Okänd ninja" }}</p>
     <p class="piece-card__place muted">{{ owned ? piece.locationName : "Hittad inte" }}</p>
+    <p v-if="owned" class="piece-card__power">Styrka {{ gameStore.ninjaStrength(piece.id) }}</p>
 
     <img v-if="photoUrl" class="piece-card__photo" :src="photoUrl" alt="Ditt foto" />
   </article>
@@ -93,6 +94,16 @@ onBeforeUnmount(() => {
 
   &__place {
     font-size: 0.78rem;
+  }
+
+  &__power {
+    margin-top: 2px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-size: 0.7rem;
+    font-weight: 700;
   }
 
   &__photo {
